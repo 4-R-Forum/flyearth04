@@ -1,18 +1,19 @@
+let button = 0
+let pitch = 0
+let roll = 0
 serial.onDataReceived(serial.delimiters(Delimiters.Dollar), function () {
-    if (input.buttonIsPressed(Button.A)) {
-        button = 1
+    button = 0
+    if (input.buttonIsPressed(Button.AB)) {
+        button = 99
     } else {
+        if (input.buttonIsPressed(Button.A)) {
+            button = 1
+        }
         if (input.buttonIsPressed(Button.B)) {
             button = -1
         }
-        pitch = 0
-        roll = 0
-        serial.writeLine("" + convertToText(button) + "," + convertToText(pitch) + "," + convertToText(roll))
     }
+    pitch = input.rotation(Rotation.Pitch)
+    roll = input.rotation(Rotation.Roll)
+    serial.writeLine("" + convertToText(button) + "," + convertToText(pitch) + "," + convertToText(roll))
 })
-let roll = 0
-let pitch = 0
-let button = 0
-button = 0
-pitch = 0
-roll = 0
