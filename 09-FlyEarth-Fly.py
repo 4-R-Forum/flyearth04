@@ -69,23 +69,12 @@ run = True
 
 while run :
   try: 
-    # get command
-    req = "|".encode("utf-8")
-    port.writelines(bytes(req))
+    # request new cmd string from mbit
+    req = "$".encode("utf-8")
+    port.write(bytes(req))
+    # get response from mbit
     cmd_string = port.readline().decode("utf-8")
-    cmd_string = port.readline().decode("utf-8")
-    """
-    match test:
-      case 0:
-        cmd_string = "1, 0, 0, 0"
-      case 1:
-        cmd_string = "2, 30, 0, 0"
-      case 2:
-        cmd_string = "3, 30, -30, 0"
-      case 3:
-        cmd_string = "4, 0, 30, 0"
-    test += 1 
-    """
+
   except Exception as e:
     sys.stdout.write(str(e))
     break
@@ -97,15 +86,12 @@ while run :
     e = n - l 
     l = n
     cmds = cmd_string.split(",")
-    if len(cmds) == 4  : #ignore more than 3 commands
+    if len(cmds) == 3  : # ignore not 3 commands
       try : # set values
-        counter = int(cmds[0])
-        run = (counter != -1)
-        button = int(cmds[3])
+        button = int(cmds[0])
         pitch =  int(cmds[1])
         roll = int(cmds[2])
-
-        if int(cmds[0]) == -1:
+        if button == 99:
           run = False
       except: # use existing value
           pass
@@ -123,7 +109,7 @@ while run :
         m += "LookDown"
       kd(k)
       action.perform()
-      sys.stdout.write(str(i) + " " +str(e)  + " " + cmd_string + " " + m + "\r\n")
+      sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
     elif (pitch < 20
       and   pitch > -20
       and   roll < 20
@@ -136,7 +122,7 @@ while run :
         kd(au) # press and hold arrow up to keep going forward
         action.perform()
         m = "Level"
-        sys.stdout.write(str(i) + " " +str(e)  + " " + cmd_string + " " + m + "\r\n")
+        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
       # end of button and level
     else:  
       # need to change direction or altitude, do one or the other this loop
@@ -160,11 +146,11 @@ while run :
         if roll < 0:
           rk = ar
           m ="GoLeft"
-        kd(rk)
+        kd(rk) # no ku, so Earth keeps turning until no roll
         ku(sh)
         #kd(au)
         action.perform()
-        sys.stdout.write(str(i) + " " +str(e)  + " " + cmd_string + " " + m + "\r\n")
+        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
       # end of roll
       #start pitch
       else :
@@ -172,22 +158,23 @@ while run :
         # pitch, go down  = PageUp
         # works ok
         if pitch > 0:
-          kd(pd)
+          kd(pd) # no ku, so Earth keeps going up until no pitch
           m ="GoUp"
         if pitch < 0:
           # /// TODO Sep-21-3 how to find camera-altituede element?
           #$altitude = $driver.FindElement($By::Id("camera-altitude"))
           #if ($altitude -le 100 ){ kd $pu ; $m ="GoDown"}
-          kd(pu)
+          kd(pu) # no ku,, so Earth should keep going down until no pitch
           m ="GoDown"
-          kd(au)
+          #kd(au) # this might cause observed issue. display seems to stop refreshing, commented out to test
         action.perform()
-        sys.stdout.write(str(i) + " " +str(e)  + " " + cmd_string + " " + m + "\r\n")
+        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
     # end of pitch
     # end of process
   # end of try read serial port
 # end of while loop
 
+input("Press Enter to stop flying")
 port.close()
 # end of flight
 
