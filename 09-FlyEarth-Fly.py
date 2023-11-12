@@ -1,6 +1,7 @@
 import sys
 import datetime
 import serial
+import time
 #import selenium
 from selenium import webdriver
 #from selenium.webdriver.chrome.options import Options
@@ -63,18 +64,25 @@ except Exception as e:
 i = 0
 l = datetime.datetime.now()
 
-test = 0
-debug = False
 run = True
-
+debug = True
+test_cmds = ("0,0,0","0,30,0","0,30,-30","0,30,30","0,-30,0")
+#             level     up        left     right      down
+test = 0
 while run :
-  try: 
-    # request new cmd string from mbit
-    req = "$".encode("utf-8")
-    port.write(bytes(req))
-    # get response from mbit
-    cmd_string = port.readline().decode("utf-8")
-
+  try:
+    if debug == False :
+      # request new cmd string from mbit
+      req = "$".encode("utf-8")
+      port.write(bytes(req))
+      # get response from mbit
+      cmd_string = port.readline().decode("utf-8")
+    else :
+      time.sleep(0.5)
+      cmd_string = test_cmds[test]
+      test += 1
+      if test == 5:
+        test = 0
   except Exception as e:
     sys.stdout.write(str(e))
     break
@@ -109,7 +117,7 @@ while run :
         m += "LookDown"
       kd(k)
       action.perform()
-      sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
+      sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string + "\r\n" )
     elif (pitch < 20
       and   pitch > -20
       and   roll < 20
@@ -122,7 +130,7 @@ while run :
         kd(au) # press and hold arrow up to keep going forward
         action.perform()
         m = "Level"
-        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
+        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string + "\r\n")
       # end of button and level
     else:  
       # need to change direction or altitude, do one or the other this loop
@@ -150,7 +158,7 @@ while run :
         ku(sh)
         #kd(au)
         action.perform()
-        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
+        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string + "\r\n")
       # end of roll
       #start pitch
       else :
@@ -168,7 +176,7 @@ while run :
           m ="GoDown"
           #kd(au) # this might cause observed issue. display seems to stop refreshing, commented out to test
         action.perform()
-        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string )
+        sys.stdout.write(str(i) + "\t" +str(e)  + "\t" + m + "\t" + cmd_string + "\r\n")
     # end of pitch
     # end of process
   # end of try read serial port
